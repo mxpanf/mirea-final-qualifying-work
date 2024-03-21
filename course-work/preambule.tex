@@ -1,0 +1,53 @@
+% !TeX program  = xelatex
+% !TeX encoding = UTF-8
+% !TeX root     = course-work.tex
+
+\usepackage{hyperref}
+\hypersetup{pdftitle={ВКР на тему "<">}, pdfauthor={М. Д. Панфилов}}
+
+\usepackage{comment}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{basicstyle=\footnotesize, breaklines=true, numbers=left, captionpos=t, showstringspaces=false, commentstyle=\color{teal}, stringstyle=\color{red}, keywordstyle=\color{violet}}  % Настройки для всех листингов
+
+% Введение и заключение
+\newcommand{\supersection}[1]{
+	\section*{#1}
+	\phantomsection
+	\addcontentsline{toc}{section}{#1}
+}
+
+\usepackage{caption}
+\captionsetup[lstlisting]{justification=raggedright, singlelinecheck=false}
+
+\usepackage{pdfpages}
+
+\usepackage{microtype}
+
+\tolerance=10000
+\hbadness=10000
+\emergencystretch=10pt
+\hyphenpenalty=10000
+\exhyphenpenalty=100
+
+\usepackage{multirow}
+
+\usepackage{array}
+\usepackage{setspace}
+\newcolumntype{x}[1]{>{\setstretch{0.8}\small\centering\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{y}[1]{>{\centering\arraybackslash\hspace{0pt}}m{#1}}
+\usepackage{longtable}
+
+\usepackage{float}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{basicstyle=\footnotesize, breaklines=true, numbers=left, captionpos=t, showstringspaces=false, commentstyle=\color{teal}, stringstyle=\color{red}, keywordstyle=\color{violet}} % Настройки для всех листингов
+\usepackage{caption}
+\captionsetup[lstlisting]{justification=raggedright, singlelinecheck=false}
+
+%\usepackage{color,xesearch}
+%\SearchList{make-red}{\textcolor{red}{#1}}{эффективность,качество}

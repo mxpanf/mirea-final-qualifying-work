@@ -1,0 +1,44 @@
+% !TeX program  = xelatex
+% !TeX encoding = UTF-8
+% !TeX root     = course-work.tex
+\documentclass{mirea}
+
+\input{preambule.tex}
+
+\begin{document}
+
+% Титульник
+\input{titlepage.tex}
+\addtocounter{page}{1}
+
+% Содержание
+\tableofcontents
+
+\nocite{*}
+
+\begin{comment}
+% Введение
+\input{course-work-0.tex}
+\end{comment}
+
+% Аналитический раздел
+\input{course-work-1.tex}
+
+\begin{comment}
+% Специальный раздел
+\input{course-work-2.tex}
+
+% Технологический раздел
+\input{course-work-3.tex}
+
+% Экономический раздел
+\input{course-work-4.tex}
+
+% Заключение
+\input{course-work-5.tex}
+
+% Библиография
+\input{bibliography.tex}
+\end{comment}
+
+\end{document}
