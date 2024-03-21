@@ -1,6 +1,6 @@
-======================================
-Qualification Collectibles |license|
-======================================
+=============================================
+Qualification Collectibles |license| |ko-fi|
+=============================================
 
 Description
 ===========
@@ -11,21 +11,10 @@ The primary goal is to provide educational institutions, students, and employers
 
 .. contents::
 
-Features
-========
-
-- Creation and issuance of verified digital diplomas as NFTs.
-- Ability to verify the authenticity of a diploma without intermediaries.
-- Use of blockchain technology to ensure security and immutability of documents.
-- Simple and intuitive user interface for both administrators and users.
-
-Contributing
-============
-
-We are open to collaboration and would appreciate any contributions and improvements. If you wish to contribute to Qualification Collectibles, please check the contributing guidelines (CONTRIBUTING.rst) or contact us directly.
-
-
-
 .. |license| image:: https://img.shields.io/github/license/mxpanf/digital-diplomas
   :alt: (check license in LICENSE file)
   :target: LICENSE
+
+.. |ko-fi| image:: https://img.shields.io/badge/ko--fi-donate-%23FF5E5B?logo=ko-fi&logoColor=white
+  :alt: (ko-fi button)
+  :target: https://ko-fi.com/O5O0VXZJR
