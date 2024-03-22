@@ -17,7 +17,14 @@
 
 \RequirePackage[english,main=russian]{babel}
 \RequirePackage{fontspec}
-\setmainfont{Times New Roman} % Если возникают проблемы при компиляции с данной строкой, необходимо на компьютер установить  Times New Roman
+\setmainfont{XO_Thames}[
+    Path = ./fonts/,
+    Extension = .ttf,
+	UprightFont=*_Nu,
+    BoldFont = *_Bu, % Жирный стиль
+    ItalicFont = *_Ni, % Курсивный стиль
+    BoldItalicFont = *_BI % Жирный курсивный стиль
+]
 \RequirePackage{newtxmath} % Поменять гарнитуру в фомулах на Times New Roman
 
 \RequirePackage[left=30mm, right=15mm, top=20mm, bottom=20mm]{geometry}
