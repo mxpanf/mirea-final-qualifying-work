@@ -5,7 +5,7 @@
 \ProvidesClass{mirea}[2024/03/21 KB-14 final classification work]
 
 
-\DeclareOption*{\PassOptionsToClass{\CurrentOption}{extarticle}} 
+\DeclareOption*{\PassOptionsToClass{\CurrentOption}{extarticle}}
 \ProcessOptions\relax
 
 \LoadClass[14pt, a4paper, titlepage]{extarticle}
@@ -18,12 +18,12 @@
 \RequirePackage[english,main=russian]{babel}
 \RequirePackage{fontspec}
 \setmainfont{XO_Thames}[
-    Path = ./fonts/,
-    Extension = .ttf,
-	UprightFont=*_Nu,
-    BoldFont = *_Bu, % Жирный стиль
-    ItalicFont = *_Ni, % Курсивный стиль
-    BoldItalicFont = *_BI % Жирный курсивный стиль
+	Path = ./fonts/,
+	Extension = .ttf,
+	UprightFont=*_nu, % Обычный стиль
+	BoldFont = *_bu, % Жирный стиль
+	ItalicFont = *_ni, % Курсивный стиль
+	BoldItalicFont = *_bi % Жирный курсивный стиль
 ]
 \RequirePackage{newtxmath} % Поменять гарнитуру в фомулах на Times New Roman
 
@@ -39,7 +39,7 @@
 
 \righthyphenmin=2 % Разрешить переносить слоги в 2 буквы (стандартное значение 3)
 
-\linespread{1.3} % полуторный межстрочный интервал
+\linespread{1.43} % полуторный межстрочный интервал
 
 %\RequirePackage{tocbibind} % Добавить раздел содержание в содержание
 
@@ -101,15 +101,15 @@
 % Буквы для нумерации списка (исключены ё, з, щ, ч, ъ, ы, ь)
 % Подробнее https://ctan.math.illinois.edu/macros/latex/required/babel/contrib/russian/russianb.pdf 
 \def\russian@alph#1{\ifcase#1\or
-	а\or б\or в\or г\or д\or е\or ж\or
-	и\or к\or л\or м\or н\or о\or п\or 
-	р\or с\or т\or у\or ф\or х\or ц\or 
-	ш\or э\or ю\or я\else\@ctrerr\fi}
+		а\or б\or в\or г\or д\or е\or ж\or
+		и\or к\or л\or м\or н\or о\or п\or
+		р\or с\or т\or у\or ф\or х\or ц\or
+		ш\or э\or ю\or я\else\@ctrerr\fi}
 \def\russian@Alph#1{\ifcase#1\or
-	А\or Б\or В\or Г\or Д\or Е\or Ж\or
-	И\or К\or Л\or М\or Н\or О\or П\or 
-	Р\or С\or Т\or У\or Ф\or Х\or Ц\or 
-	Ш\or Э\or Ю\or Я\else\@ctrerr\fi}
+		А\or Б\or В\or Г\or Д\or Е\or Ж\or
+		И\or К\or Л\or М\or Н\or О\or П\or
+		Р\or С\or Т\or У\or Ф\or Х\or Ц\or
+		Ш\or Э\or Ю\or Я\else\@ctrerr\fi}
 
 \patchcmd{\l@section}{#1}{\textnormal{\uppercase{#1}}}{}{} % Разделы в содержании без выделения жирным, в верхнем регистре
 \patchcmd{\l@section}{#2}{\textnormal{#2}}{}{} % Страницы без выделения жирным
@@ -120,7 +120,7 @@
 	\renewcommand\thefigure{\Asbuk{section}.\arabic{figure}} % Изменении формата нумерации иллюстрации
 	\renewcommand\thetable{\Asbuk{section}.\arabic{table}} % Изменении формата нумерации таблицы
 	\renewcommand\theequation{\Asbuk{section}.\arabic{equation}} % Изменении формата нумерации формулы
-	
+
 	\let\oldsec\section
 	\renewcommand{\section}{
 		\clearpage
