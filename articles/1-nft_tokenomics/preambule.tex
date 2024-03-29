@@ -19,10 +19,10 @@
 	\addcontentsline{toc}{section}{#1}
 }
 
-\tolerance=9999
-\hbadness=10000
+\tolerance=5000
+\hbadness=9999
 \emergencystretch=10pt
-\hyphenpenalty=10000
+\hyphenpenalty=5000
 \exhyphenpenalty=100
 
 \usepackage{caption}
@@ -41,3 +41,11 @@
 \usepackage{longtable}
 
 \usepackage{float}
+
+\newcommand{\artauthor}[3]{
+    \begin{FlushRight}
+    \textbf{#1}\\ % Имя автора
+    #2\\ % Статус/позиция
+    \texttt{#3} % Email
+    \end{FlushRight}
+}
