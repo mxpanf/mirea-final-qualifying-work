@@ -18,7 +18,7 @@
 \RequirePackage[english,main=russian]{babel}
 \RequirePackage{fontspec}
 \setmainfont{XO_Thames}[
-	Path = ./fonts/,
+	Path = ../fonts/,
 	Extension = .ttf,
 	UprightFont=*_nu, % Обычный стиль
 	BoldFont = *_bu, % Жирный стиль
