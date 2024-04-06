@@ -1,70 +1,88 @@
 % !TeX program  = xelatex
 % !TeX encoding = UTF-8
-% !TeX root     = course-work.tex
+% !TeX root     = final-qualifying-work.tex
+
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{mirea}[2024/03/21 KB-14 final classification work]
+\ProvidesClass{mirea}[2024/03/21 v1.0 MIREA KB-14 final classification work]
 
-
+% Declare options and pass them to the underlying class
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{extarticle}}
 \ProcessOptions\relax
 
+% Load the base class with options
 \LoadClass[14pt, a4paper, titlepage]{extarticle}
 
-
+% Package for hyperlinks in documents, disabling the colored borders around links
 \RequirePackage{hyperref}
-\hypersetup{colorlinks=false, pdfborder={0 0 0}} % Отключение подсветки ссылок
+\hypersetup{colorlinks=false, pdfborder={0 0 0}}
 
-
+% Language support for English and Russian, setting Russian as the main language
 \RequirePackage[english,main=russian]{babel}
+
+% Font package for specifying fonts
 \RequirePackage{fontspec}
+
+% Set the main document font, with specific styles for different font weights and italics
 \setmainfont{XO_Thames}[
 	Path = ../fonts/,
 	Extension = .ttf,
-	UprightFont=*_nu, % Обычный стиль
-	BoldFont = *_bu, % Жирный стиль
-	ItalicFont = *_ni, % Курсивный стиль
-	BoldItalicFont = *_bi % Жирный курсивный стиль
+	UprightFont=*_nu,      % Regular style
+	BoldFont = *_bu,       % Bold style
+	ItalicFont = *_ni,     % Italic style
+	BoldItalicFont = *_bi  % Bold Italic style
 ]
-\RequirePackage{newtxmath} % Поменять гарнитуру в фомулах на Times New Roman
 
-\RequirePackage[left=30mm, right=15mm, top=20mm, bottom=20mm]{geometry}
 
-\RequirePackage{indentfirst} % Красная строка у первого абзаца раздела
+% Math formulas
+\RequirePackage{newtxmath}
 
+% Package for including graphics
 \RequirePackage{graphicx}
 
-\parindent=1.25cm % Размер красной строки
+% Page geometry setup: margins
+\RequirePackage[left=30mm, right=15mm, top=20mm, bottom=20mm]{geometry}
 
-\parskip=0pt % Отступ между абзацами
+% Ensure the first paragraph of each section is indented
+\RequirePackage{indentfirst}
 
-\righthyphenmin=2 % Разрешить переносить слоги в 2 буквы (стандартное значение 3)
+% Paragraph indentation and spacing setup
+\parindent=1.25cm % Paragraph indentation
+\parskip=0pt      % Paragraph spacing
 
-\linespread{1.43} % полуторный межстрочный интервал
+% Minimum number of characters at the end of a line for hyphenation
+\righthyphenmin=2
+
+% Line spacing (1.5 lines)
+\linespread{1.43}
 
 %\RequirePackage{tocbibind} % Добавить раздел содержание в содержание
 
-% Настройка заголовка содержания
+% Customization of the table of contents title
 \addto\captionsrussian{\renewcommand{\contentsname}{Содержание}}
 
-\RequirePackage[normalem]{ulem} % underline some lines
+% Package for enhanced underline capabilities
+\RequirePackage[normalem]{ulem}
 
+% Package for customizing the list of figures, tables, and contents
 \RequirePackage{tocloft}
-% Формат содержания
+% Contents title format customization
 \renewcommand\cfttoctitlefont{\hfill\fontsize{16pt}{16pt}\selectfont\bfseries\MakeUppercase}
 \renewcommand\cftaftertoctitle{\hfill\hfill}
-
-\setlength{\cftbeforesecskip}{0pt} % Addtional space between sections in toc
+% Adjust additional space between sections in toc
+\setlength{\cftbeforesecskip}{0pt}
+% Add dots to section titles in the table of contents
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
 
 %\setlength{\cftsecindent}{0pt} % Remove indent in toc for \section
 %\setlength{\cftsubsecindent}{0pt} % Remove indent in toc for \subsection
 %\setlength{\cftsubsubsecindent}{0pt} % Remove indent in toc for \subsubsection
 
-\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}} % Добавить точки у разделов в содержании
+% Package to control the placement of floats like tables and figures
+\RequirePackage{placeins}
 
-\RequirePackage{placeins} % Команда \FloatBarrier для размещения плавающего окружения в пределах раздела, подраздела, пункта
-
-% Настройка раздела, подраздела, подподраздела
+% Package for customizing section titles
 \RequirePackage{titlesec}
+% Customize the format of sections, subsections, and subsubsections
 \titleformat{\section}{\FloatBarrier\parskip=6pt\filcenter\fontsize{16pt}{16pt}\selectfont\bfseries\uppercase}{\thesection}{.5em}{}
 \titleformat{\subsection}{\FloatBarrier\filcenter\bfseries}{\thesubsection}{.5em}{}
 \titleformat{\subsubsection}{\FloatBarrier\filcenter\bfseries}{\thesubsubsection}{.5em}{}

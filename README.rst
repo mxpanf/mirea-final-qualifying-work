@@ -11,7 +11,7 @@ The primary goal is to provide educational institutions, students, and employers
 
 .. contents::
 
-.. |license| image:: https://img.shields.io/github/license/mxpanf/mirea-course-work
+.. |license| image:: https://img.shields.io/github/license/mxpanf/mirea-final-qualifying-work
   :alt: (check license in LICENSE file)
   :target: LICENSE
 
