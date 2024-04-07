@@ -1,0 +1,52 @@
+@startuml tg_dc
+
+class Users {
+    +user_id: int
+    +username: string
+    +wallet_address: string
+    +is_admin: boolean
+}
+
+class Diplomas {
+    +diploma_id: int
+    +user_id: int
+    +collection_id: int
+    +status: string
+    +metadata_ipfs_hash: string
+}
+
+class Collections {
+    +collection_id: int
+    +admin_id: int
+    +metadata: string
+    +signature_threshold: int
+}
+
+class IssuanceRequests {
+    +request_id: int
+    +diploma_id: int
+    +request_code: string
+    +status: string
+}
+
+class SessionsAndNotifications {
+    +session_id: int
+    +user_id: int
+    +last_interaction: datetime
+    +notifications_enabled: boolean
+}
+
+class TelegramBot {
+    +registerUser()
+    +initiateDiplomaIssuance()
+    +verifyDiploma()
+    +sendNotification()
+}
+
+Users "1" -- "*" Diplomas : "owns"
+Users "1" -- "*" Collections : "creates"
+Diplomas "1" -- "1" Collections : "part of"
+Diplomas "1" -- "*" IssuanceRequests : "requests for"
+SessionsAndNotifications "1" -- "1" Users : "notifies"
+
+@enduml

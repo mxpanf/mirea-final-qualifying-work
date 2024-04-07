@@ -1,0 +1,22 @@
+@startuml data_proc
+
+actor "Пользователь" as User
+participant "Интерфейс системы" as Interface
+participant "Сервер приложений" as Server
+participant "Модуль хеширования" as HashModule
+database "База данных" as DB
+database "IPFS" as IPFS
+participant "Блокчейн" as Blockchain
+
+User -> Interface: Предоставляет CODE и FIO
+Interface -> Server: Передает данные
+Server -> HashModule: Объединяет и подготавливает данные для хеширования
+HashModule -> HashModule: Применяет SHA512 и HMAC для хеширования данных
+HashModule -> DB: Сохраняет хеш и оригинальные данные
+DB -> IPFS: Отправляет хеш и оригинальные данные
+IPFS -> Blockchain: Регистрирует метаданные в блокчейне
+Blockchain -> Server: Подтверждает успешное хранение данных
+Server -> Interface: Отправляет подтверждение пользователю
+Interface -> User: Отображает статус верификации данных
+
+@enduml

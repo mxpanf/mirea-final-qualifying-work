@@ -1,0 +1,23 @@
+@startuml diploma_issue
+
+actor "Администратор (Университет)" as Admin
+actor "Студент" as Student
+actor "Комиссия" as Committee
+entity "Telegram-бот" as Bot
+entity "Смарт-контракты" as Contracts
+database "IPFS" as IPFS
+database "Блокчейн" as Blockchain
+entity "Личный кошелек пользователя" as Wallet
+
+Admin -> Contracts: Создание коллекции\nУстановка HMAC
+Admin -> Contracts: Настройка мультиподписи\nУказание числа и состава подписей
+Student -> Bot: Переход по deeplink
+Bot -> Contracts: Запрос на выпуск диплома\nКод из deeplink
+Contracts -> IPFS: Создание уникального изображения диплома
+Contracts -> Committee: Отправка запросов на подписание
+Committee -> Contracts: Подписание диплома
+Contracts -> IPFS: Загрузка преобразованных данных и токена
+IPFS -> Wallet: Передача диплома в кошелек пользователя
+Wallet -> Blockchain: Регистрация диплома\nДоступен для верификации
+
+@enduml

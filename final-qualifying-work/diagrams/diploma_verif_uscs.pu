@@ -1,0 +1,19 @@
+@startuml diploma_verif_uscs
+actor "Пользователь" as User
+participant "Интерфейс системы" as Interface
+participant "Сервер" as Server
+database "Блокчейн" as Blockchain
+
+User -> Interface : инициирует запрос на верификацию
+Interface -> Server : передает данные пользователя
+Server -> Blockchain : проверяет данные диплома
+alt данные совпадают
+    Blockchain -> Server : подтверждает верификацию
+    Server -> Interface : передает подтверждение
+    Interface -> User : уведомляет о успешной верификации
+else данные не совпадают
+    Blockchain -> Server : сообщает об ошибке
+    Server -> Interface : передает ошибку
+    Interface -> User : уведомляет об ошибке верификации
+end
+@enduml

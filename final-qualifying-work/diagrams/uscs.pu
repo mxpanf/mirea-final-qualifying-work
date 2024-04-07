@@ -1,0 +1,25 @@
+@startuml uscs
+left to right direction
+actor "Администратор" as Admin
+actor "Пользователь" as User
+actor "Студент" as Student
+actor "Комиссия" as Committee
+
+rectangle "Система токенизации дипломов" {
+  usecase "Создание коллекции" as UC1
+  usecase "Выпуск диплома" as UC2
+  usecase "Верификация диплома" as UC3
+  usecase "Просмотр диплома" as UC4
+  usecase "Управление пользователями" as UC5
+  usecase "Настройка параметров системы" as UC6
+
+  Admin --> UC1
+  Admin --> UC5
+  Admin --> UC6
+  Student --> UC2
+  Student --> UC4
+  Committee --> UC2
+  User --> UC3
+  User --> UC4
+}
+@enduml
