@@ -1,0 +1,780 @@
+\section{Код программного комплекса <<Дипломер>>}
+\label{appendix:software_code}
+
+\subsection{Умный контракт для блокчейна на EVM}
+\label{appendix:sd_smartcon}
+
+\begin{lstlisting}[label=lst:smartcon, language=Solidity, caption=Смарт-контракт]
+    pragma solidity ^0.8.7;
+    
+    import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+    import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+    import "@openzeppelin/contracts/utils/Counters.sol";
+    import "@openzeppelin/contracts/access/AccessControl.sol";
+    
+    /// @custom:security-contact mpanfilov@vti.ru
+    contract SoulBoundToken is ERC721URIStorage, AccessControl {
+        
+        using Counters for Counters.Counter;
+    
+        bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+        bytes32 public constant MULTISIG_ROLE = keccak256("MULTISIG_ROLE");
+        Counters.Counter private _tokenIdCounter;
+        
+        // For multisig approvals
+        mapping(uint256 => address[]) private _mintApprovals;
+        uint256 public constant MIN_APPROVALS = 2; // Minimum number of approvals required
+    
+        constructor() ERC721("SoulBoundToken", "SBT") {
+            _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+            _grantRole(MINTER_ROLE, msg.sender);
+            _grantRole(MINTER_ROLE, 0x0000000000000000000000000000000000000000);
+        }
+    
+        // @dev Function to mint tokens with multisig approval. Accepts an address and a token URI.
+        function proposeMint(address to, string memory uri) public onlyRole(MINTER_ROLE) {
+            uint256 tokenId = _tokenIdCounter.current();
+            _mintApprovals[tokenId].push(msg.sender);
+            _safeMint(to, tokenId);
+            _setTokenURI(tokenId, uri);
+        }
+    
+        function approveMint(uint256 tokenId) public onlyRole(MULTISIG_ROLE) {
+            require(_exists(tokenId), "Token does not exist.");
+            require(!_isApproved(tokenId, msg.sender), "Already approved.");
+            
+            _mintApprovals[tokenId].push(msg.sender);
+    
+            if (_mintApprovals[tokenId].length >= MIN_APPROVALS) {
+                _finalizeMint(tokenId);
+            }
+        }
+    
+        function _isApproved(uint256 tokenId, address approver) internal view returns (bool) {
+            address[] memory approvals = _mintApprovals[tokenId];
+            for (uint i = 0; i < approvals.length; i++) {
+                if (approvals[i] == approver) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    
+        function _finalizeMint(uint256 tokenId) internal {
+            _tokenIdCounter.increment();
+            delete _mintApprovals[tokenId];
+        }
+    
+        function burn(uint256 tokenId) external {
+            require(
+                ownerOf(tokenId) == msg.sender || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), 
+                "Only owner or contract admin can burn it."
+            );
+            _burn(tokenId);
+        }
+    
+        function totalSupply() public view returns (uint256) {
+            return _tokenIdCounter.current();
+        }
+    
+        function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) pure internal override(ERC721) {
+            require(from == address(0) || to == address(0), "SBD token can't be transferred.");
+        }
+    
+        function _burn(uint256 tokenId) internal override(ERC721URIStorage) {
+            super._burn(tokenId);
+        }
+    
+        function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721URIStorage, AccessControl) returns (bool) {
+            return (ERC721.supportsInterface(interfaceId) || AccessControl.supportsInterface(interfaceId));
+        }
+    
+        // Role management functions
+        function addMinter(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
+            grantRole(MINTER_ROLE, account);
+        }
+    
+        function removeMinter(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
+            revokeRole(MINTER_ROLE, account);
+        }
+    
+        function addMultisig(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
+            grantRole(MULTISIG_ROLE, account);
+        }
+    
+        function removeMultisig(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
+            revokeRole(MULTISIG_ROLE, account);
+        }
+    }
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Тесты умного контракта]
+    from web3 import Web3
+    from contract_data import abi
+    from dotenv import dotenv_values
+    
+    config = dotenv_values(".env")
+    
+    w3 = Web3(Web3.HTTPProvider(config["WEB3_PROVIDER"]))
+    chain_id = int(config["CHAIN_ID"])
+    contract_address = config["CONTRACT_ADDRESS"]
+    private_key = config["PRIVATE_KEY"]
+    
+    contract = w3.eth.contract(address=contract_address, abi=abi)
+    account = w3.eth.account.from_key(private_key)
+    
+    def get_nonce():
+        return w3.eth.get_transaction_count(account.address)
+    
+    def mint(to, uri):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.proposeMint(to, uri).build_transaction({
+            'chainId': chain_id,
+            'gas': 200000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def approve_mint(token_id):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.approveMint(token_id).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def balance(address: str = account.address):
+        return contract.functions.balanceOf(address).call()
+    
+    def burn(token_id: int):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.burn(token_id).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def transfer(to, token_id: int):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.transferFrom(account.address, w3.to_checksum_address(to), token_id).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    # Example usage:
+    if __name__ == "__main__":
+        to_address = "0xRecipientAddressHere"
+        token_uri = "ipfs://your-token-uri"
+        
+        # Propose mint
+        mint_receipt = mint(to_address, token_uri)
+        print(f"Mint Proposal Transaction Receipt: {mint_receipt}")
+    
+        # Approve mint (you'll need to do this from multiple accounts with MULTISIG_ROLE)
+        token_id = 0  # Assuming the first token ID
+        approve_receipt = approve_mint(token_id)
+        print(f"Mint Approval Transaction Receipt: {approve_receipt}")
+    
+        # Check balance
+        user_balance = balance(to_address)
+        print(f"User Balance: {user_balance}")
+    
+        # Burn token
+        burn_receipt = burn(token_id)
+        print(f"Burn Transaction Receipt: {burn_receipt}")    
+\end{lstlisting}
+
+\subsection{Модуль выпуска дипломов}
+
+\begin{lstlisting}[language=Python, caption=Функции выпуска дипломов]
+    from web3 import Web3
+    from contract_data import abi
+    from dotenv import dotenv_values
+    
+    config = dotenv_values(".env")
+    
+    w3 = Web3(Web3.HTTPProvider(config["WEB3_PROVIDER"]))
+    chain_id = int(config["CHAIN_ID"])
+    contract_address = config["CONTRACT_ADDRESS"]
+    private_key = config["PRIVATE_KEY"]
+    
+    contract = w3.eth.contract(address=contract_address, abi=abi)
+    account = w3.eth.account.from_key(private_key)
+    
+    def get_nonce():
+        return w3.eth.get_transaction_count(account.address)
+    
+    def propose_mint(to, uri):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.proposeMint(to, uri).build_transaction({
+            'chainId': chain_id,
+            'gas': 200000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def approve_mint(token_id):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.approveMint(token_id).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def balance(address: str = account.address):
+        return contract.functions.balanceOf(address).call()
+    
+    def burn(token_id: int):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.burn(token_id).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def total_supply():
+        return contract.functions.totalSupply().call()
+    
+    def add_minter(account_address):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.addMinter(account_address).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def remove_minter(account_address):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.removeMinter(account_address).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def add_multisig(account_address):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.addMultisig(account_address).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def remove_multisig(account_address):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.removeMultisig(account_address).build_transaction({
+            'chainId': chain_id,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Интерфейс для консольного запуска (\_\_main\_\_.py)]
+    from minter import propose_mint, approve_mint, balance, burn, transfer, total_supply, add_minter, remove_minter, add_multisig, remove_multisig
+
+    if __name__ == "__main__":
+        to_address = "0xRecipientAddressHere"
+        token_uri = "ipfs://token-uri"
+    
+        # Propose mint
+        mint_receipt = propose_mint(to_address, token_uri)
+        print(f"Mint Proposal Transaction Receipt: {mint_receipt}")
+    
+        # Approve mint (you'll need to do this from multiple accounts with MULTISIG_ROLE)
+        token_id = 0  # Assuming the first token ID
+        approve_receipt = approve_mint(token_id)
+        print(f"Mint Approval Transaction Receipt: {approve_receipt}")
+    
+        # Check balance
+        user_balance = balance(to_address)
+        print(f"User Balance: {user_balance}")
+    
+        # Burn token
+        burn_receipt = burn(token_id)
+        print(f"Burn Transaction Receipt: {burn_receipt}")
+    
+        # Check total supply
+        supply = total_supply()
+        print(f"Total Supply: {supply}")
+    
+        # Manage roles
+        new_minter = "0xNewMinterAddressHere"
+        add_minter_receipt = add_minter(new_minter)
+        print(f"Add Minter Transaction Receipt: {add_minter_receipt}")
+    
+        remove_minter_receipt = remove_minter(new_minter)
+        print(f"Remove Minter Transaction Receipt: {remove_minter_receipt}")
+    
+        new_multisig = "0xNewMultisigAddressHere"
+        add_multisig_receipt = add_multisig(new_multisig)
+        print(f"Add Multisig Transaction Receipt: {add_multisig_receipt}")
+    
+        remove_multisig_receipt = remove_multisig(new_multisig)
+        print(f"Remove Multisig Transaction Receipt: {remove_multisig_receipt}")    
+\end{lstlisting}
+
+\subsection{Программный интерфейс приложения (API)}
+
+\begin{lstlisting}[language=Python, caption=Ядро API]
+    from fastapi import FastAPI, HTTPException
+    from mint import propose_mint, approve_mint
+    from burn import burn_token
+    from read import get_balance, get_total_supply
+    from roles import add_minter_role, remove_minter_role, add_multisig_role, remove_multisig_role
+    
+    app = FastAPI()
+    
+    @app.post("/mint/")
+    def mint(to_address: str, token_uri: str):
+        receipt = propose_mint(to_address, token_uri)
+        return {"receipt": receipt}
+    
+    @app.post("/approve_mint/")
+    def approve_mint(token_id: int):
+        receipt = approve_mint(token_id)
+        return {"receipt": receipt}
+    
+    @app.post("/burn/")
+    def burn(token_id: int):
+        receipt = burn_token(token_id)
+        return {"receipt": receipt}
+    
+    @app.get("/balance/{address}")
+    def balance(address: str):
+        balance = get_balance(address)
+        return {"balance": balance}
+    
+    @app.get("/total_supply/")
+    def total_supply():
+        supply = get_total_supply()
+        return {"total_supply": supply}
+    
+    @app.post("/roles/add_minter/")
+    def add_minter(address: str):
+        receipt = add_minter_role(address)
+        return {"receipt": receipt}
+    
+    @app.post("/roles/remove_minter/")
+    def remove_minter(address: str):
+        receipt = remove_minter_role(address)
+        return {"receipt": receipt}
+    
+    @app.post("/roles/add_multisig/")
+    def add_multisig(address: str):
+        receipt = add_multisig_role(address)
+        return {"receipt": receipt}
+    
+    @app.post("/roles/remove_multisig/")
+    def remove_multisig(address: str):
+        receipt = remove_multisig_role(address)
+        return {"receipt": receipt}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Упрощенная модель для базы данных]
+    from sqlalchemy import create_engine, Column, Integer, String
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import sessionmaker
+    
+    DATABASE_URL = "sqlite:///./test.db"
+    
+    engine = create_engine(DATABASE_URL)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Base = declarative_base()
+    
+    class Token(Base):
+        __tablename__ = "tokens"
+    
+        id = Column(Integer, primary_key=True, index=True)
+        owner = Column(String, index=True)
+        uri = Column(String, index=True)    
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Модуль управления ролями]
+    from web3 import Web3
+    from contract_data import abi
+    from config import WEB3_PROVIDER, CHAIN_ID, CONTRACT_ADDRESS, PRIVATE_KEY
+    
+    w3 = Web3(Web3.HTTPProvider(WEB3_PROVIDER))
+    contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=abi)
+    account = w3.eth.account.from_key(PRIVATE_KEY)
+    
+    def get_nonce():
+        return w3.eth.get_transaction_count(account.address)
+    
+    def add_minter_role(account_address):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.addMinter(account_address).build_transaction({
+            'chainId': CHAIN_ID,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def remove_minter_role(account_address):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.removeMinter(account_address).build_transaction({
+            'chainId': CHAIN_ID,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def add_multisig_role(account_address):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.addMultisig(account_address).build_transaction({
+            'chainId': CHAIN_ID,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt
+    
+    def remove_multisig_role(account_address):
+        gas_price = w3.eth.gas_price
+        nonce = get_nonce()
+        tx = contract.functions.removeMultisig(account_address).build_transaction({
+            'chainId': CHAIN_ID,
+            'gas': 100000,
+            'gasPrice': gas_price,
+            'nonce': nonce,
+        })
+        signed_tx = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash.hex())
+        return receipt    
+\end{lstlisting}
+
+\subsection{Веб-приложение для создания дипломов}
+\label{appendix:sd_adm_webapp}
+
+\begin{lstlisting}[label=lst:admin_webapp, language=React, caption=Интерфейс администратора для создания коллекции дипломов]
+    import React, { useState } from 'react';
+    import { Button, TextField, Typography, Box, Slider, InputLabel, FormControl, Select, MenuItem, Grid } from '@mui/material';
+    import axios from 'axios';
+    
+    const NFTForm = () => {
+      const [name, setName] = useState('');
+      const [description, setDescription] = useState('');
+      const [author, setAuthor] = useState('');
+      const [signatures, setSignatures] = useState(2);
+      const [file, setFile] = useState(null);
+      const [fileUrl, setFileUrl] = useState('');
+      const [metadata, setMetadata] = useState('');
+    
+      const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        setFile(file);
+    
+        const formData = new FormData();
+        formData.append('file', file);
+    
+        try {
+          const response = await axios.post('IPFS_UPLOAD_URL', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+    
+          setFileUrl(response.data.Hash);
+        } catch (error) {
+          console.error('Error uploading file:', error);
+        }
+      };
+    
+      const handleSubmit = async () => {
+        try {
+          const response = await axios.post('/api/mint', {
+            name,
+            description,
+            author,
+            signatures,
+            fileUrl,
+            metadata,
+          });
+    
+          console.log('Minting successful:', response.data);
+        } catch (error) {
+          console.error('Error minting NFT:', error);
+        }
+      };
+    
+      return (
+        <Grid container spacing={2} sx={{ padding: '20px' }}>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ textAlign: 'center', border: '1px solid grey', borderRadius: '10px', padding: '20px' }}>
+              <Typography variant="h5" gutterBottom>Upload Images</Typography>
+              <FormControl fullWidth margin="normal">
+                <input
+                  type="file"
+                  id="file-upload"
+                  accept=".jpg,.jpeg,.png,.svg,.gif,.webp,.mp4,.zip"
+                  onChange={handleFileUpload}
+                />
+              </FormControl>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ textAlign: 'center', border: '1px solid grey', borderRadius: '10px', padding: '20px' }}>
+              <Typography variant="h5" gutterBottom>Upload Metadata</Typography>
+              <TextField
+                fullWidth
+                label="Metadata JSON"
+                variant="outlined"
+                margin="normal"
+                multiline
+                rows={4}
+                value={metadata}
+                onChange={(e) => setMetadata(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="Collection Name"
+                variant="outlined"
+                margin="normal"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="Collection Description"
+                variant="outlined"
+                margin="normal"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="Author"
+                variant="outlined"
+                margin="normal"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+              />
+              <Box sx={{ width: '100%', marginTop: '20px' }}>
+                <Typography gutterBottom>Number of Signatures Required</Typography>
+                <Slider
+                  value={signatures}
+                  onChange={(e, newValue) => setSignatures(newValue)}
+                  aria-labelledby="continuous-slider"
+                  valueLabelDisplay="auto"
+                  step={1}
+                  marks
+                  min={1}
+                  max={10}
+                />
+              </Box>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                sx={{ marginTop: '20px' }}
+              >
+                Create NFT
+              </Button>
+            </Box>
+          </Grid>
+        </Grid>
+      );
+    };
+    
+    export default NFTForm;
+\end{lstlisting}
+
+\subsection{Телеграм-бот для пользовательского взаимодействия}
+\label{appendix:sd_user_telegram}
+
+\begin{lstlisting}[language=JavaScript, caption=Коннектор для подключения кошелька]
+    import solConnect from '@solconnect/sdk';
+    import { solConnectStorage } from './storage';
+    import * as process from 'process';
+    
+    type StoredConnectorData = {
+        connector: solConnect;
+        timeout: ReturnType<typeof setTimeout>;
+        onConnectorExpired: ((connector: solConnect) => void)[];
+    };
+    
+    const connectors = new Map<number, StoredConnectorData>();
+    
+    export function getConnector(
+        chatId: number,
+        onConnectorExpired?: (connector: solConnect) => void
+    ): solConnect {
+        let storedItem: StoredConnectorData;
+        if (connectors.has(chatId)) {
+            storedItem = connectors.get(chatId)!;
+            clearTimeout(storedItem.timeout);
+        } else {
+            storedItem = {
+                connector: new solConnect({
+                    manifestUrl: process.env.MANIFEST_URL,
+                    storage: new solConnectStorage(chatId)
+                }),
+                onConnectorExpired: []
+            } as unknown as StoredConnectorData;
+        }
+    
+        if (onConnectorExpired) {
+            storedItem.onConnectorExpired.push(onConnectorExpired);
+        }
+    
+        storedItem.timeout = setTimeout(() => {
+            if (connectors.has(chatId)) {
+                const storedItem = connectors.get(chatId)!;
+                storedItem.connector.pauseConnection();
+                storedItem.onConnectorExpired.forEach(callback => callback(storedItem.connector));
+                connectors.delete(chatId);
+            }
+        }, Number(process.env.CONNECTOR_TTL_MS));
+    
+        connectors.set(chatId, storedItem);
+        return storedItem.connector;
+    }
+\end{lstlisting}
+
+\begin{lstlisting}[label=lst:user_client, language=JavaScript, caption=Ядро бота]
+    import dotenv from 'dotenv';
+    dotenv.config();
+    
+    import { bot } from './bot';
+    import { walletMenuCallbacks } from './connect-wallet-menu';
+    import {
+        handleConnectCommand,
+        handleDisconnectCommand,
+        handleSendWalletCommand,
+        handleShowMyWalletCommand
+    } from './commands-handlers';
+    import { getStorage, initRedisClient } from './sol-connect/storage';
+    import TelegramBot from 'node-telegram-bot-api';
+    
+    async function main(): Promise<void> {
+        await initRedisClient();
+    
+        const callbacks = {
+            ...walletMenuCallbacks
+        };
+    
+        bot.on('callback_query', query => {
+            if (!query.data) {
+                return;
+            }
+    
+            let request: { method: string; data: string };
+    
+            try {
+                request = JSON.parse(query.data);
+            } catch {
+                return;
+            }
+    
+            if (!callbacks[request.method as keyof typeof callbacks]) {
+                return;
+            }
+    
+            callbacks[request.method as keyof typeof callbacks](query, request.data);
+        });
+    
+        bot.onText(/\/connect/, handleConnectCommand);
+    
+        bot.onText(/\/send_wallet/, handleSendWalletCommand);
+        bot.onText(/Отправить ещё раз/, handleSendWalletCommand)
+    
+        // bot.onText(/\/send_tx/, handleSendTXCommand);
+    
+        bot.onText(/\/disconnect/, handleDisconnectCommand);
+    
+        bot.onText(/\/my_wallet/, handleShowMyWalletCommand);
+    
+        bot.onText(/\/start/, (msg: TelegramBot.Message) => {
+            bot.sendMessage(
+                msg.chat.id,
+                `
+    Добро пожаловать! Этот бот поможет Вам получить сертификат. Введите команду /connect, чтобы начать.`
+            );
+    
+            const storage = getStorage(msg.chat.id);
+            storage.setItem("code", msg.text?.split(" ")[1] || "")
+        });
+    }
+    
+    main();
+    
+\end{lstlisting}

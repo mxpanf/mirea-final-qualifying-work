@@ -60,6 +60,70 @@
 \usepackage{float}
 
 \usepackage{listings}
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+\lstdefinelanguage{Solidity}{
+  keywords={pragma, solidity, contract, function, returns, return, if, else, for, while, do, break, continue, throw, revert, emit, mapping, struct, enum, address, bool, string, int, uint, public, private, internal, external, pure, view, constant, payable, override, virtual, new, delete, require, assert, constructor, true, false, this},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={import, using, as, library, is, modifier, event, abstract, interface},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+\lstdefinelanguage{Python}{
+    keywords={def, return, raise, from, import, as, class, if, elif, else, while, continue, break, try, except, finally, with, assert, yield, lambda, global, nonlocal, pass, del, or, and, not, is, in, True, False, None},
+    keywordstyle=\color{blue}\bfseries,
+    ndkeywords={self, cls, __init__, __name__, __main__},
+    ndkeywordstyle=\color{teal}\bfseries,
+    identifierstyle=\color{black},
+    sensitive=true,
+    comment=[l]{\#},
+    morecomment=[s]{"""}{"""},
+    morecomment=[s]{'''}{'''},
+    commentstyle=\color{purple}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    morestring=[b]',
+    morestring=[b]"
+}
+\lstdefinelanguage{React}{
+    keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break, const, let, of},
+    keywordstyle=\color{blue}\bfseries,
+    ndkeywords={class, export, boolean, throw, implements, import, this, extends, component, render, constructor, super, props, state, setState, useState, useEffect, useContext, useReducer, useCallback, useMemo, useRef, Fragment},
+    ndkeywordstyle=\color{teal}\bfseries,
+    identifierstyle=\color{black},
+    sensitive=false,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    commentstyle=\color{purple}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[s]{`}{`},
+    moredelim=[s][\color{orange}]{<}{>},
+    moredelim=[s][\color{orange}]{</}{>},
+    moredelim=[l][\color{orange}]{/>},
+    moredelim=[l][\color{orange}]{=},
+    moredelim=[s][\color{cyan}]{\{}{\}},
+}
+
 \usepackage{xcolor}
 \lstset{basicstyle=\footnotesize, breaklines=true, numbers=left, captionpos=t, showstringspaces=false, commentstyle=\color{teal}, stringstyle=\color{red}, keywordstyle=\color{violet}} % Настройки для всех листингов
 \usepackage{caption}
