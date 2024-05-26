@@ -1,0 +1,45 @@
+% !TeX program  = xelatex
+% !TeX encoding = UTF-8
+% !TeX root     = diploma.tex
+\documentclass{settings/diploma}
+\input{settings/preamble.tex}
+
+\begin{document}
+
+% Включение титульного листа
+%\includepdf[pages={1-2}]{titlepages/TitlePage.pdf}
+%\includepdf[pages={1}]{titlepages/Title-3.pdf}
+%\addtocounter{page}{5}
+% \input{titlepages/titlepage.tex}
+
+% Содержание
+\tableofcontents
+
+% Введение
+%\input{sections/0.introduction.tex}
+
+% Разделы
+%% Аналитический раздел
+\input{sections/1.analytical.tex}
+
+%% Специальный раздел
+%\input{sections/2.special.tex}
+
+%% Технологический раздел
+%\input{sections/3.technological.tex}
+
+%% Экономический раздел
+%\input{sections/4.economic.tex}
+
+% Заключение
+%\input{sections/99.conclusion.tex}
+
+% Список источников
+\input{sections/a.bibliography.tex}
+
+% Приложение
+\appendix
+\input{sections/z.appendix.3.technological.tex}
+\input{sections/z.appendix.4.economic.tex}
+
+\end{document}
