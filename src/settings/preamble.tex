@@ -69,6 +69,9 @@
 % Определение подписей и гиперссылок
 \captionsetup[lstlisting]{justification=raggedright, singlelinecheck=false}
 
+% Настройка отступа после подписи таблицы
+\captionsetup[figure]{belowskip=-16pt}
+
 \crefformat{table}{#2#1#3}
 \crefrangeformat{table}{#3#1#4--#5#2#6}
 \crefmultiformat{table}{#2#1#3}{ и~#2#1#3}{, #2#1#3}{ и~#2#1#3}
@@ -80,18 +83,42 @@
 \usepackage{listings}
 % \usepackage{listingsutf8} % Для поддержки UTF-8 в листингах
 
+\makeatletter
+\renewenvironment{thebibliography}[1]
+     {\section*{\refname}%
+      \@mkboth{\MakeUppercase\refname}{\MakeUppercase\refname}%
+      \list{\@biblabel{\@arabic\c@enumiv}}%
+           {\settowidth\labelwidth{\@biblabel{#1}}%
+            \leftmargin\labelwidth
+            \advance\leftmargin\labelsep
+            \setlength{\itemsep}{0pt} % Устанавливаем межстрочный интервал между элементами библиографии
+            \setlength{\parsep}{0pt} % Устанавливаем интервал перед абзацами
+            \setlength{\parskip}{0pt} % Устанавливаем интервал между абзацами
+            \@openbib@code
+            \usecounter{enumiv}%
+            \let\p@enumiv\@empty
+            \renewcommand\theenumiv{\@arabic\c@enumiv}}%
+      \sloppy
+      \clubpenalty4000
+      \@clubpenalty \clubpenalty
+      \widowpenalty4000%
+      \sfcode`\.\@m}
+     {\def\@noitemerr
+       {\@latex@warning{Empty `thebibliography' environment}}%
+      \endlist}
+\makeatother
+
 \lstset{
   extendedchars=true,       % Расширенные символы
-  basicstyle=\footnotesize, % Шрифт и размер текста
-  numbers=left,             % Расположение номеров строк (left, right)
+  basicstyle=\monofont\footnotesize, % Шрифт и размер текста
+  numbers=none,             % Расположение номеров строк (left, right)
   numberstyle=\color{gray}, % Стиль номеров строк
-  stepnumber=1,             % Шаг нумерации строк
-  numbersep=5pt,            % Отступ номеров строк от кода
   backgroundcolor=\color{white}, % Цвет фона
   showspaces=false,         % Показывать пробелы
   showstringspaces=true,   % Показывать пробелы в строках
+  frame=single,            % Рамка вокруг листинга
   showtabs=true,           % Показывать табуляцию
-  % frame=single,           % Рамка вокруг кода
+  frame=single,           % Рамка вокруг кода
   rulecolor=\color{black},  % Цвет рамки
   tabsize=2,                % Размер табуляции
   captionpos=t,             % Позиция заголовка (t или b)

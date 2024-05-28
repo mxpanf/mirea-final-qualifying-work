@@ -32,6 +32,16 @@
 	BoldItalicFont = *_bi  % Bold Italic style
 ]
 
+\newfontface\monofont{XO_Courser}[
+    Path = ../fonts/,
+    Extension = .ttf,
+    UprightFont=*_nu,      % Monospace regular style
+    BoldFont = *_bu,      % Monospace bold style
+    ItalicFont = *_ni,     % Monospace italic style
+    BoldItalicFont = *_bi % Monospace bold italic style
+]
+
+
 % Math formulas
 \RequirePackage{newtxmath}
 
@@ -84,7 +94,7 @@
 % Customize the format of sections, subsections, and subsubsections
 \titleformat{\section}{\FloatBarrier\parskip=6pt\filcenter\fontsize{16pt}{16pt}\selectfont\bfseries\uppercase}{\thesection}{.5em}{}
 \titleformat{\subsection}{\FloatBarrier\filcenter\bfseries}{\thesubsection}{.5em}{}
-\titleformat{\subsubsection}{\FloatBarrier\filright\bfseries}{\thesubsubsection}{.5em}{}
+\titleformat{\subsubsection}{\FloatBarrier\filright\bfseries\itshape}{\thesubsubsection}{.5em}{}
 %\titlespacing*{\subsection}{0pt}{*2}{0pt} % Remove indent for \subsection 
 %\titlespacing*{\subsubsection}{0pt}{*2}{0pt} % Remove indent for \subsubsection
 
