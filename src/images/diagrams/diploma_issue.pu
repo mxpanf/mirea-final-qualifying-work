@@ -7,17 +7,18 @@ entity "Telegram-бот" as Bot
 entity "Смарт-контракты" as Contracts
 database "IPFS" as IPFS
 database "Блокчейн" as Blockchain
-entity "Личный кошелек пользователя" as Wallet
+entity "Личный кошелек" as Wallet
 
 Admin -> Contracts: Создание коллекции\nУстановка HMAC
 Admin -> Contracts: Настройка мультиподписи\nУказание числа и состава подписей
 Student -> Bot: Переход по deeplink
-Bot -> Contracts: Запрос на выпуск диплома\nКод из deeplink
-Contracts -> IPFS: Создание уникального изображения диплома
-Contracts -> Committee: Отправка запросов на подписание
+Bot -> Contracts: Запрос на выпуск\n(Код из deeplink)
+Contracts -> IPFS: Загрузка изображения
+Contracts -> Committee: Запрос на подпись
 Committee -> Contracts: Подписание диплома
-Contracts -> IPFS: Загрузка преобразованных данных и токена
-IPFS -> Wallet: Передача диплома в кошелек пользователя
-Wallet -> Blockchain: Регистрация диплома\nДоступен для верификации
+Contracts -> IPFS: Загрузка метаданных
+Contracts -> IPFS: Чеканка токена
+IPFS -> Wallet: Передача диплома
+Wallet -> Blockchain: Регистрация диплома\n(+Верификация)
 
 @enduml

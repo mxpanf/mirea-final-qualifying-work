@@ -26,6 +26,13 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 
+% Настройка нумерованных списков: замена скобки на точку
+\renewcommand\labelenumi{\theenumi.}
+
+\setlist[itemize]{left=1.25cm, topsep=0pt, partopsep=0pt, parsep=0pt, itemsep=0pt}
+\setlist[enumerate]{left=1.25cm, topsep=0pt, partopsep=0pt, parsep=0pt, itemsep=0pt}
+\setlist[enumerate,2]{left=1.25cm, topsep=0pt, partopsep=0pt, parsep=0pt, itemsep=0pt}
+
 % Пакеты для работы с таблицами
 \usepackage{array}
 \usepackage{longtable}
@@ -55,12 +62,17 @@
 
 %\usepackage[compress]{cite}
 
-% Настройки переносов и гипенизации
-\tolerance=5000
-\hbadness=9999
-\emergencystretch=10pt
-\hyphenpenalty=5000
-\exhyphenpenalty=100
+% % Настройки переносов и гипенизации
+% \tolerance=5000
+% \hbadness=9999
+% \emergencystretch=10pt
+% \hyphenpenalty=5000
+% \exhyphenpenalty=100
+
+\tolerance=1
+\emergencystretch=\maxdimen
+\hyphenpenalty=10000
+\hbadness=10000
 
 % Определение новых типов столбцов для таблиц
 \newcolumntype{x}[1]{>{\setstretch{0.8}\small\centering\arraybackslash\hspace{0pt}}m{#1}}
@@ -69,8 +81,19 @@
 % Определение подписей и гиперссылок
 \captionsetup[lstlisting]{justification=raggedright, singlelinecheck=false}
 
-% Настройка отступа после подписи таблицы
-\captionsetup[figure]{belowskip=-16pt}
+% Настройка отступа после подписи рисунка
+\captionsetup[figure]{
+    singlelinecheck=true,     % Проверка одиночной строки
+    belowskip=-10pt,             % Убираем отступы ниже подписи
+}
+
+% Настройка подписей к таблицам
+\captionsetup[table]{
+    justification=raggedright, % Выравнивание по левому краю
+    singlelinecheck=false,      % Проверка одиночной строки
+    skip=0pt,
+}
+
 
 \crefformat{table}{#2#1#3}
 \crefrangeformat{table}{#3#1#4--#5#2#6}

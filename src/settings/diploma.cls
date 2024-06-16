@@ -82,9 +82,15 @@
 % Add dots to section titles in the table of contents
 \renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
 
-%\setlength{\cftsecindent}{0pt} % Remove indent in toc for \section
-%\setlength{\cftsubsecindent}{0pt} % Remove indent in toc for \subsection
-%\setlength{\cftsubsubsecindent}{0pt} % Remove indent in toc for \subsubsection
+% Add a period after section and subsection numbers in the table of contents
+\renewcommand{\cftsecaftersnum}{.}
+\renewcommand{\cftsubsecaftersnum}{.}
+\renewcommand{\cftsubsubsecaftersnum}{.}
+
+\setlength{\cftsecindent}{0pt} % Remove indent in toc for \section
+\setlength{\cftsubsecindent}{0pt} % Remove indent in toc for \subsection
+\setlength{\cftsubsubsecindent}{0pt} % Remove indent in toc for \subsubsection
+
 
 % Package to control the placement of floats like tables and figures
 \RequirePackage{placeins}
@@ -92,9 +98,9 @@
 % Package for customizing section titles
 \RequirePackage{titlesec}
 % Customize the format of sections, subsections, and subsubsections
-\titleformat{\section}{\FloatBarrier\parskip=6pt\filcenter\fontsize{16pt}{16pt}\selectfont\bfseries\uppercase}{\thesection}{.5em}{}
-\titleformat{\subsection}{\FloatBarrier\filcenter\bfseries}{\thesubsection}{.5em}{}
-\titleformat{\subsubsection}{\FloatBarrier\filright\bfseries\itshape}{\thesubsubsection}{.5em}{}
+\titleformat{\section}{\FloatBarrier\parskip=6pt\filcenter\fontsize{16pt}{16pt}\selectfont\bfseries\uppercase}{\thesection.}{.5em}{}
+\titleformat{\subsection}{\FloatBarrier\filcenter\bfseries}{\thesubsection.}{.5em}{}
+\titleformat{\subsubsection}{\FloatBarrier\filright\bfseries\itshape}{\thesubsubsection.}{.5em}{}
 %\titlespacing*{\subsection}{0pt}{*2}{0pt} % Remove indent for \subsection 
 %\titlespacing*{\subsubsection}{0pt}{*2}{0pt} % Remove indent for \subsubsection
 
